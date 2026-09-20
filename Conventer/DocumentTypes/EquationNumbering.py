@@ -97,10 +97,10 @@ def _ensure_mathpara(p) -> None:
 
 
 def _add_equation_spacing(para) -> None:
-    """Отступы вокруг формулы — 18 pt сверху и снизу.
-
-    ВАЖНО: lineRule='atLeast', а не 'exact'. Иначе Word обрезает
-    высокие формулы (с дробями, интегралами) по фиксированной высоте.
+    """Отступы вокруг формулы + выравнивание по центру.
+    
+    lineRule='atLeast', а не 'exact'. Иначе Word обрезает
+    высокие формулы (с дробями, интегралами).
     """
     pPr = para._p.get_or_add_pPr()
 
@@ -109,12 +109,19 @@ def _add_equation_spacing(para) -> None:
         pPr.remove(old)
 
     spacing = OxmlElement("w:spacing")
-    spacing.set(qn("w:before"), "360")       # 18 pt сверху
-    spacing.set(qn("w:after"), "360")        # 18 pt снизу
-    spacing.set(qn("w:line"), "360")         # минимум 18 pt
-    spacing.set(qn("w:lineRule"), "atLeast") # ← было "exact", стало "atLeast"
+    spacing.set(qn("w:before"), "360")
+    spacing.set(qn("w:after"), "360")
+    spacing.set(qn("w:line"), "360")
+    spacing.set(qn("w:lineRule"), "atLeast")
     pPr.append(spacing)
 
+    # Выравнивание по центру для параграфа с формулой
+    old_jc = pPr.find(_w("jc"))
+    if old_jc is not None:
+        pPr.remove(old_jc)
+    jc = OxmlElement("w:jc")
+    jc.set(qn("w:val"), "center")
+    pPr.append(jc)
 
 def _add_right_tab(para, tab_cm: float) -> None:
     """Добавить правый таб-стоп в pPr абзаца."""

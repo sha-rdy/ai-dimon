@@ -22,7 +22,6 @@ _ALIGN_MAP = {
 }
 
 
-# Встроенные стили Word: styleId → отображаемое имя.
 _BUILTIN_NAMES: dict[str, str] = {
     "Normal":        "Normal",
     "BodyText":      "Body Text",
@@ -36,6 +35,8 @@ _BUILTIN_NAMES: dict[str, str] = {
     "Heading8":      "Heading 8",
     "Heading9":      "Heading 9",
     "Caption":       "Caption",
+    "TableCaption":  "Table Caption",
+    "ImageCaption":  "Image Caption",
     "Title":         "Title",
     "Subtitle":      "Subtitle",
     "Quote":         "Quote",
@@ -44,6 +45,9 @@ _BUILTIN_NAMES: dict[str, str] = {
     "FootnoteText":  "Footnote Text",
     "Header":        "Header",
     "Footer":        "Footer",
+    "TableGrid":     "Table Grid",
+    "TOCHeading":    "TOC Heading",
+
 }
 
 
@@ -55,16 +59,14 @@ class TemplateGenerator:
 
     def generate(self, out_path: Path) -> Path:
         doc = Document()
-
         self._apply_section(doc)
         self._apply_styles(doc)
         self._placeholder(doc)
-
         out_path.parent.mkdir(parents=True, exist_ok=True)
         doc.save(out_path)
         return out_path
 
-    # --- внутреннее ---
+    # --- секция ---
 
     def _apply_section(self, doc: Document) -> None:
         s = doc.sections[0]
@@ -76,16 +78,19 @@ class TemplateGenerator:
         s.right_margin = Mm(self.spec.section.margin_right_mm)
         s.footer_distance = Mm(self.spec.section.footer_offset_mm)
 
+    # --- стили ---
+
     def _apply_styles(self, doc: Document) -> None:
         for spec in self.spec.styles.values():
-            style = self._get_or_create(doc, spec.name, spec.base_style)
+            if spec.name == "Table":
+                style = self._apply_table_style(doc, spec)
+            else:
+                style = self._get_or_create(doc, spec.name, spec.base_style)
             self._apply_font(style, spec)
             self._apply_paragraph(style, spec)
 
     @staticmethod
     def _get_or_create(doc: Document, name: str, base: str):
-        """Найти стиль по styleId без warning'ов. Создать, если нет."""
-
         display = _BUILTIN_NAMES.get(name)
         if display is not None:
             try:
@@ -105,6 +110,53 @@ class TemplateGenerator:
         return st
 
     @staticmethod
+    def _apply_table_style(doc: Document, spec: StyleSpec):
+        """Создать табличный стиль 'Table' с границами. Возвращает style."""
+        # Ищем существующий табличный стиль с id = 'Table'
+        for st in doc.styles:
+            if st.type == WD_STYLE_TYPE.TABLE and st.style_id == "Table":
+                if spec.table_borders:
+                    TemplateGenerator._apply_table_borders(st)
+                return st
+
+        # Создаём новый табличный стиль 'Table'
+        try:
+            style = doc.styles.add_style("Table", WD_STYLE_TYPE.TABLE)
+        except Exception:
+            style = doc.styles["Table Grid"]
+
+        try:
+            style.base_style = doc.styles["Table Grid"]
+        except KeyError:
+            pass
+
+        if spec.table_borders:
+            TemplateGenerator._apply_table_borders(style)
+        return style
+
+    @staticmethod
+    def _apply_table_borders(style) -> None:
+        """Добавить границы к стилю таблицы."""
+        tblPr = style.element.find(qn("w:tblPr"))
+        if tblPr is None:
+            tblPr = OxmlElement("w:tblPr")
+            style.element.append(tblPr)
+
+        old = tblPr.find(qn("w:tblBorders"))
+        if old is not None:
+            tblPr.remove(old)
+
+        borders = OxmlElement("w:tblBorders")
+        for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
+            el = OxmlElement(f"w:{edge}")
+            el.set(qn("w:val"), "single")
+            el.set(qn("w:sz"), "4")
+            el.set(qn("w:space"), "0")
+            el.set(qn("w:color"), "000000")
+            borders.append(el)
+        tblPr.append(borders)
+
+    @staticmethod
     def _apply_font(style, spec: StyleSpec) -> None:
         f = style.font
         f.name = spec.font
@@ -113,7 +165,6 @@ class TemplateGenerator:
         f.italic = spec.italic
 
         rpr = style.element.get_or_add_rPr()
-
         rfonts = rpr.find(qn("w:rFonts"))
         if rfonts is None:
             rfonts = OxmlElement("w:rFonts")
@@ -127,33 +178,29 @@ class TemplateGenerator:
                 color = OxmlElement("w:color")
                 rpr.append(color)
             color.set(qn("w:val"), spec.color_hex)
+            for attr in ("w:themeColor", "w:themeTint", "w:themeShade"):
+                if color.get(qn(attr)) is not None:
+                    del color.attrib[qn(attr)]
 
     @staticmethod
     def _apply_paragraph(style, spec: StyleSpec) -> None:
         p = style.paragraph_format
         p.alignment = _ALIGN_MAP[spec.align]
-
         if spec.first_line_indent_cm is not None:
             p.first_line_indent = Mm(spec.first_line_indent_cm * 10)
         else:
             p.first_line_indent = Mm(0)
-
         p.space_before = Pt(spec.space_before_pt)
         p.space_after = Pt(spec.space_after_pt)
         p.keep_with_next = spec.keep_with_next
-
         if spec.line_spacing_pt is not None:
             p.line_spacing_rule = WD_LINE_SPACING.EXACTLY
             p.line_spacing = Pt(spec.line_spacing_pt)
 
         ppr = style.element.get_or_add_pPr()
-
-        # Page break before
         if spec.page_break_before:
             if ppr.find(qn("w:pageBreakBefore")) is None:
                 ppr.append(OxmlElement("w:pageBreakBefore"))
-
-        # Tab stops
         if spec.tab_stops:
             tabs_el = ppr.find(qn("w:tabs"))
             if tabs_el is None:

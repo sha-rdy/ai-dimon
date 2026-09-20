@@ -59,6 +59,7 @@ class StyleSpec:
     keep_with_next: bool = False
     base_style: str = "Normal"
     tab_stops: tuple[TabStop, ...] = ()
+    table_borders: bool = False
 
 
 @dataclass

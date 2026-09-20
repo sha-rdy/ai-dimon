@@ -16,7 +16,7 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
     FILTERS_DIR: ClassVar[Path | None] = None
 
     MARKDOWN_FORMAT: ClassVar[str] = (
-        "markdown+pipe_tables+tex_math_dollars+implicit_figures+raw_tex+footnotes+smart"
+        "markdown+pipe_tables+tex_math_dollars+raw_tex+footnotes+smart-implicit_figures"
     )
     BASE_ARGS: ClassVar[list[str]] = [
         "--toc",

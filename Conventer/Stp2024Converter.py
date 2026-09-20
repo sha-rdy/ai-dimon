@@ -16,7 +16,10 @@ class Stp2024Converter(DocxConverter):
     FILTERS_DIR: ClassVar[Path] = _TEMPLATE_DIR / "filters"
 
     def extra_args(self) -> list[str]:
-        return ["--syntax-highlighting=tango"]
+        return [
+            "--syntax-highlighting=tango",
+            "--metadata=toc-title=СОДЕРЖАНИЕ",
+                ]
 
     def convert(self, source, target) -> None:
         super().convert(source, target)

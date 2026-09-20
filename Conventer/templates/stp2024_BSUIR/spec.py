@@ -26,8 +26,16 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     first_line_indent_cm=1.25,
     line_spacing_pt=18.0,
     # tab_stops=_FORMULA_TABS,
+    # table_borders=True,
 ))
-
+STP2024_BSUIR_SPEC.add(StyleSpec(
+    name="Table",
+    font="Times New Roman", size_pt=14.0,
+    align=Align.LEFT,
+    first_line_indent_cm=None,
+    line_spacing_pt=18.0,
+    table_borders=True,
+))
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="BodyText",
     base_style="Normal",
@@ -114,4 +122,13 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     align=Align.CENTER,
     first_line_indent_cm=None,
     line_spacing_pt=18.0,
+))
+STP2024_BSUIR_SPEC.add(StyleSpec(
+    name="TOCHeading",
+    font="Times New Roman", size_pt=14.0, bold=True,
+    color_hex="000000",
+    align=Align.CENTER,
+    first_line_indent_cm=None,
+    line_spacing_pt=18.0,
+    space_after_pt=18.0,
 ))
