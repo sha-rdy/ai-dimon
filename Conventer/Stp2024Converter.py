@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from MdToDocxConverter import DocxConverter
+from DocumentTypes.EquationNumbering import number_equations
 
 
 class Stp2024Converter(DocxConverter):
@@ -15,6 +16,9 @@ class Stp2024Converter(DocxConverter):
     FILTERS_DIR: ClassVar[Path] = _TEMPLATE_DIR / "filters"
 
     def extra_args(self) -> list[str]:
-        return [
-            "--highlight-style=tango",
-        ]
+        return ["--syntax-highlighting=tango"]
+
+    def convert(self, source, target) -> None:
+        super().convert(source, target)
+        n = number_equations(target.path)
+        print(f"Пронумеровано формул: {n}")

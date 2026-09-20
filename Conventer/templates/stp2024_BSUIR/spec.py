@@ -1,6 +1,6 @@
 """Спецификация шаблона reference.docx под СТП 01-2024 (БГУИР)."""
 
-from templates.spec import Align, SectionSpec, StyleSpec, TemplateSpec
+from templates.spec import Align, SectionSpec, StyleSpec, TabStop, TemplateSpec
 
 
 STP2024_BSUIR_SPEC = TemplateSpec(
@@ -16,13 +16,16 @@ STP2024_BSUIR_SPEC = TemplateSpec(
     ),
 )
 
-# --- Основной текст (п. 2.1.1, прил. Л) ---
+_FORMULA_TABS = (TabStop(pos_cm=17.0, align="right"),)
+
+
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="Normal",
     font="Times New Roman", size_pt=14.0,
     align=Align.JUSTIFY,
     first_line_indent_cm=1.25,
     line_spacing_pt=18.0,
+    # tab_stops=_FORMULA_TABS,
 ))
 
 STP2024_BSUIR_SPEC.add(StyleSpec(
@@ -32,6 +35,7 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     align=Align.JUSTIFY,
     first_line_indent_cm=1.25,
     line_spacing_pt=18.0,
+    tab_stops=_FORMULA_TABS,
 ))
 
 STP2024_BSUIR_SPEC.add(StyleSpec(
@@ -39,20 +43,20 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     base_style="Normal",
     font="Times New Roman", size_pt=14.0,
     align=Align.JUSTIFY,
-    first_line_indent_cm=None,      # без отступа после заголовка
+    first_line_indent_cm=None,
     line_spacing_pt=18.0,
+    tab_stops=_FORMULA_TABS,
 ))
 
-# --- Заголовки (п. 2.2.5, прил. Л) ---
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="Heading1",
     font="Times New Roman", size_pt=14.0, bold=True,
-    color_hex="000000",             # чёрный, не синий
+    color_hex="000000",
     align=Align.LEFT,
     first_line_indent_cm=1.25,
     line_spacing_pt=18.0,
     space_after_pt=18.0,
-    page_break_before=True,         # каждый раздел — с новой страницы
+    page_break_before=True,
     keep_with_next=True,
 ))
 
@@ -77,9 +81,8 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     keep_with_next=True,
 ))
 
-# --- Подписи (п. 2.5.5, 2.6.2) ---
 STP2024_BSUIR_SPEC.add(StyleSpec(
-    name="Caption",                 # подписи рисунков — по центру
+    name="Caption",
     font="Times New Roman", size_pt=14.0,
     align=Align.CENTER,
     first_line_indent_cm=None,
@@ -89,7 +92,7 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
 ))
 
 STP2024_BSUIR_SPEC.add(StyleSpec(
-    name="TableCaption",            # подписи таблиц — слева, отступ 1,25 см
+    name="TableCaption",
     font="Times New Roman", size_pt=14.0,
     align=Align.LEFT,
     first_line_indent_cm=1.25,
@@ -97,7 +100,6 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     space_before_pt=6.0,
 ))
 
-# --- Листинги ---
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="SourceCode",
     font="Courier New", size_pt=12.0,
@@ -106,7 +108,6 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     line_spacing_pt=12.0,
 ))
 
-# --- Титул ---
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="Title",
     font="Times New Roman", size_pt=14.0, bold=True,

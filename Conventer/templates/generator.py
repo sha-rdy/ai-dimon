@@ -23,7 +23,6 @@ _ALIGN_MAP = {
 
 
 # Встроенные стили Word: styleId → отображаемое имя.
-# Нужно, чтобы python-docx не ругался на lookup by style_id.
 _BUILTIN_NAMES: dict[str, str] = {
     "Normal":        "Normal",
     "BodyText":      "Body Text",
@@ -87,7 +86,6 @@ class TemplateGenerator:
     def _get_or_create(doc: Document, name: str, base: str):
         """Найти стиль по styleId без warning'ов. Создать, если нет."""
 
-        # 1) Встроенные — по отображаемому имени
         display = _BUILTIN_NAMES.get(name)
         if display is not None:
             try:
@@ -95,12 +93,10 @@ class TemplateGenerator:
             except KeyError:
                 pass
 
-        # 2) Уже созданные кастомные — перебором по style_id
         for style in doc.styles:
             if style.style_id == name:
                 return style
 
-        # 3) Создаём новый
         st = doc.styles.add_style(name, WD_STYLE_TYPE.PARAGRAPH)
         try:
             st.base_style = doc.styles[base]
@@ -118,7 +114,6 @@ class TemplateGenerator:
 
         rpr = style.element.get_or_add_rPr()
 
-        # Шрифт для всех алфавитов, включая кириллицу
         rfonts = rpr.find(qn("w:rFonts"))
         if rfonts is None:
             rfonts = OxmlElement("w:rFonts")
@@ -126,7 +121,6 @@ class TemplateGenerator:
         for attr in ("w:ascii", "w:hAnsi", "w:cs", "w:eastAsia"):
             rfonts.set(qn(attr), spec.font)
 
-        # Принудительный чёрный (заголовки в Word по умолчанию синие)
         if spec.color_hex is not None:
             color = rpr.find(qn("w:color"))
             if color is None:
@@ -158,6 +152,18 @@ class TemplateGenerator:
         if spec.page_break_before:
             if ppr.find(qn("w:pageBreakBefore")) is None:
                 ppr.append(OxmlElement("w:pageBreakBefore"))
+
+        # Tab stops
+        if spec.tab_stops:
+            tabs_el = ppr.find(qn("w:tabs"))
+            if tabs_el is None:
+                tabs_el = OxmlElement("w:tabs")
+                ppr.append(tabs_el)
+            for stop in spec.tab_stops:
+                tab = OxmlElement("w:tab")
+                tab.set(qn("w:val"), stop.align)
+                tab.set(qn("w:pos"), str(int(stop.pos_cm * 567)))
+                tabs_el.append(tab)
 
     @staticmethod
     def _placeholder(doc: Document) -> None:

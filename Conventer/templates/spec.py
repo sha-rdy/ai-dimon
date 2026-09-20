@@ -35,6 +35,13 @@ class SectionSpec:
 
 
 @dataclass(frozen=True)
+class TabStop:
+    """Позиция табуляции в абзаце."""
+    pos_cm: float
+    align: str = "right"   # "left" | "center" | "right"
+
+
+@dataclass(frozen=True)
 class StyleSpec:
     """Параметры одного стиля."""
     name: str                       # styleId, например "Heading1"
@@ -45,12 +52,13 @@ class StyleSpec:
     color_hex: str | None = None    # "000000" — принудительно чёрный
     align: Align = Align.JUSTIFY
     first_line_indent_cm: float | None = 1.25
-    line_spacing_pt: float | None = 18.0    # Exactly 18 pt
+    line_spacing_pt: float | None = 18.0
     space_before_pt: float = 0.0
     space_after_pt: float = 0.0
     page_break_before: bool = False
     keep_with_next: bool = False
     base_style: str = "Normal"
+    tab_stops: tuple[TabStop, ...] = ()
 
 
 @dataclass
@@ -60,8 +68,6 @@ class TemplateSpec:
     section: SectionSpec = field(default_factory=SectionSpec)
     styles: dict[str, StyleSpec] = field(default_factory=dict)
 
-    # Стили, которые чекер считает обязательными. Если None — проверяются
-    # все стили из self.styles.
     required_styles: ClassVar[set[str] | None] = None
 
     def add(self, style: StyleSpec) -> "TemplateSpec":

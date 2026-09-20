@@ -21,7 +21,6 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
     BASE_ARGS: ClassVar[list[str]] = [
         "--toc",
         "--toc-depth=2",
-        "--number-sections",
         "--standalone",
     ]
 
