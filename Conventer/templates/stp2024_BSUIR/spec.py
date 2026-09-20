@@ -143,3 +143,10 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     page_break_before=True,
     keep_with_next=True,
 ))
+STP2024_BSUIR_SPEC.add(StyleSpec(
+    name="FootnoteText",
+    font="Times New Roman", size_pt=12.0,
+    align=Align.JUSTIFY,
+    first_line_indent_cm=None,
+    line_spacing_pt=12.0,
+))

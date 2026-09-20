@@ -5,7 +5,9 @@ from MdToDocxConverter import DocxConverter
 from DocumentTypes.EquationNumbering import number_equations
 from DocumentTypes.PostProcess import add_page_numbers, enable_field_updates
 from DocumentTypes.SpecialHeadings import fix_special_headings
-
+from DocumentTypes.TableFixes import fix_tables
+from DocumentTypes.ListFixes import fix_lists
+from DocumentTypes.FootnoteFixes import fix_footnote_marks
 
 class Stp2024Converter(DocxConverter):
     """Конвертер Markdown → DOCX по СТП 01–2024 (БГУИР).
@@ -37,7 +39,7 @@ class Stp2024Converter(DocxConverter):
     def convert(self, source, target) -> None:
         super().convert(source, target)
 
-        if getattr(self, "with_special_headings", True):
+        if self.with_special_headings:
             n = fix_special_headings(
                 target.path,
                 style_name=self.special_style_name,
@@ -45,6 +47,12 @@ class Stp2024Converter(DocxConverter):
                 appendix_prefix=self.appendix_prefix,
             )
             print(f"Спецзаголовки переоформлены: {n}")
+
+        n = fix_tables(target.path)
+        print(f"Таблиц обработано: {n}")
+
+        n = fix_lists(target.path)
+        print(f"Перечислений обработано: {n}")
 
         if self.with_equation_numbers:
             n = number_equations(target.path, tab_cm=self.eq_tab_cm)
@@ -58,6 +66,9 @@ class Stp2024Converter(DocxConverter):
                 size_pt=self.pn_size_pt,
             )
             print("Нумерация страниц: добавлена")
+
+        n = fix_footnote_marks(target.path)
+        print(f"Знаков сносок обработано: {n}")
 
         if self.with_toc and self.with_field_updates:
             enable_field_updates(target.path)

@@ -1,21 +1,64 @@
--- СТП 01-2024, п. 2.6.2: подпись таблицы
--- Формат: «Таблица N.M – Название», слева, НАД таблицей.
--- ВАЖНО: очищаем caption у Table, иначе Pandoc дублирует его.
+-- СТП 01-2024, п. 2.6.2: подпись таблицы.
+-- Обычные разделы: «Таблица N.M».
+-- Приложения: «Таблица А.1», «Таблица Б.1».
+
+local SPECIAL = {
+  ["введение"] = true,
+  ["заключение"] = true,
+  ["содержание"] = true,
+  ["реферат"] = true,
+  ["список использованных источников"] = true,
+  ["перечень условных обозначений"] = true,
+  ["перечень условных обозначений, символов и терминов"] = true,
+}
+
+local APP_LETTERS = {
+  "А","Б","В","Г","Д","Е","Ж","И","К","Л","М",
+  "Н","П","Р","С","Т","У","Ф","Х","Ц","Ш","Щ","Э","Ю","Я",
+}
 
 local section = 0
 local tab_count = 0
+local in_appendix = false
+local app_index = 0
+
+local function is_special(text)
+  return SPECIAL[pandoc.text.lower(text)] == true
+end
+
+local function is_appendix(text)
+  return pandoc.text.lower(text):match("^приложение") ~= nil
+end
 
 function Header(el)
   if el.level == 1 then
-    section = section + 1
-    tab_count = 0
+    local txt = pandoc.utils.stringify(el.content)
+    if is_appendix(txt) then
+      in_appendix = true
+      app_index = app_index + 1
+      tab_count = 0
+    elseif is_special(txt) then
+      in_appendix = false
+      section = 0
+      tab_count = 0
+    else
+      in_appendix = false
+      section = section + 1
+      tab_count = 0
+    end
   end
   return el
 end
 
 function Table(el)
   tab_count = tab_count + 1
-  local num = string.format("Таблица %d.%d", section, tab_count)
+  local num
+  if in_appendix then
+    local letter = APP_LETTERS[app_index] or "?"
+    num = string.format("Таблица %s.%d", letter, tab_count)
+  else
+    num = string.format("Таблица %d.%d", section, tab_count)
+  end
 
   local caption_text = ""
   if el.caption and el.caption.long and #el.caption.long > 0 then
@@ -24,10 +67,9 @@ function Table(el)
 
   local full_caption = num
   if caption_text ~= "" then
-    full_caption = num .. " \226\128\147 " .. caption_text  -- en-dash
+    full_caption = num .. " \226\128\147 " .. caption_text
   end
 
-  -- Очищаем caption, чтобы Pandoc не рендерил его второй раз
   el.caption = pandoc.Caption({}, {})
 
   return {

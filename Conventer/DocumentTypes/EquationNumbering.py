@@ -28,28 +28,60 @@ def _w(tag: str) -> str:
 
 
 def number_equations(docx_path: Path, tab_cm: float = 16.5) -> int:
-    """Нумерует display-формулы в DOCX. Возвращает количество формул."""
+    """Нумерует display-формулы в DOCX.
+
+    Обычные разделы: (N.M).
+    Приложения: (А.1), (Б.1).
+    Спецразделы (Введение, Заключение, ...) сбрасывают счётчики.
+    """
     doc = Document(str(docx_path))
 
     section = 0
     eq_count = 0
     numbered = 0
+    in_appendix = False
+    app_index = 0
+    app_letters = "АБВГДЕЖИКЛМНПРСТУФХЦШЩЭЮЯ"
+
+    special_lower = {
+        "введение", "заключение", "содержание", "реферат",
+        "список использованных источников",
+        "перечень условных обозначений",
+        "перечень условных обозначений, символов и терминов",
+    }
 
     for para in doc.paragraphs:
-        style_name = (para.style.name or "").lower()
-        if style_name in ("heading 1", "heading1"):
-            section += 1
-            eq_count = 0
+        style = para.style
+        sid = (style.style_id or "").lower() if style else ""
+        sname = (style.name or "").lower() if style else ""
+
+        is_h1 = (
+            sid in ("heading1", "specialheading")
+            or sname in ("heading 1", "specialheading")
+        )
+
+        if is_h1:
+            text_low = para.text.strip().lower()
+
+            if text_low.startswith("приложение"):
+                in_appendix = True
+                app_index += 1
+                eq_count = 0
+            elif text_low in special_lower:
+                in_appendix = False
+                section = 0
+                eq_count = 0
+            else:
+                in_appendix = False
+                section += 1
+                eq_count = 0
             continue
 
         p = para._p
-
         maths = p.findall(".//" + _m("oMath"))
         if not maths:
             continue
 
-        # Пропускаем параграфы, где есть осмысленный текст —
-        # формула инлайновая, не нумеруем.
         text = "".join((t.text or "") for t in p.findall(".//" + _w("t")))
         if text.strip():
             continue
@@ -59,7 +91,13 @@ def number_equations(docx_path: Path, tab_cm: float = 16.5) -> int:
 
         eq_count += 1
         numbered += 1
-        num = f"({section}.{eq_count})"
+
+        if in_appendix:
+            idx = app_index - 1
+            letter = app_letters[idx] if 0 <= idx < len(app_letters) else "?"
+            num = f"({letter}.{eq_count})"
+        else:
+            num = f"({section}.{eq_count})"
 
         _add_equation_spacing(para)
         _add_right_tab(para, tab_cm)
@@ -67,7 +105,6 @@ def number_equations(docx_path: Path, tab_cm: float = 16.5) -> int:
 
     doc.save(str(docx_path))
     return numbered
-
 
 def _unwrap_sdt(p) -> None:
     """Разворачивает <w:sdt> вокруг формулы — убирает серую рамку Word."""
