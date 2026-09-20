@@ -1,7 +1,6 @@
 -- СТП 01-2024, п. 2.5.5: подпись рисунка
 -- Формат: «Рисунок N.M – Название», по центру, без точки.
--- Работает при отключённом implicit_figures — картинка приходит
--- как Para с одним Image, а не как Figure.
+-- Ловим Para с одним Image (Pandoc с -implicit_figures).
 
 local section = 0
 local fig_count = 0
@@ -24,8 +23,11 @@ function Para(el)
   local caption = pandoc.utils.stringify(img.caption or {})
   local text = num
   if caption ~= "" then
-    text = num .. " \226\128\147 " .. caption  -- en-dash
+    text = num .. " \226\128\147 " .. caption
   end
+
+  -- Очищаем alt-текст, чтобы Pandoc не вывел его как вторую подпись.
+  img.caption = {}
 
   return {
     el,

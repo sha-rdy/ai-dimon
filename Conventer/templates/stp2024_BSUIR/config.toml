@@ -1,0 +1,49 @@
+# СТП 01-2024 (БГУИР) — параметры оформления.
+
+[meta]
+name = "СТП 01-2024 (БГУИР)"
+
+[section]
+page_width_mm    = 210.0
+page_height_mm   = 297.0
+margin_top_mm    = 20.0
+margin_bottom_mm = 20.0
+margin_left_mm   = 30.0
+margin_right_mm  = 15.0
+footer_offset_mm = 10.0
+
+[headings]
+special = [
+    "введение",
+    "заключение",
+    "содержание",
+    "реферат",
+    "список использованных источников",
+    "перечень условных обозначений",
+    "перечень условных обозначений, символов и терминов",
+]
+appendix_prefix = "приложение"
+special_style   = "SpecialHeading"
+
+[equations]
+tab_cm = 16.5
+
+[page_numbers]
+align   = "right"
+font    = "Times New Roman"
+size_pt = 14.0
+enabled = true
+
+[toc]
+enabled = true
+depth   = 2
+title   = "СОДЕРЖАНИЕ"
+
+[features]
+uppercase_h1       = true
+section_numbers    = true
+equation_numbers   = true
+figure_captions    = true
+table_captions     = true
+special_headings   = true
+field_updates      = true

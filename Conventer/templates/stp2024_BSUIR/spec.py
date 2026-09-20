@@ -132,3 +132,14 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     line_spacing_pt=18.0,
     space_after_pt=18.0,
 ))
+STP2024_BSUIR_SPEC.add(StyleSpec(
+    name="SpecialHeading",
+    font="Times New Roman", size_pt=14.0, bold=True,
+    color_hex="000000",
+    align=Align.CENTER,
+    first_line_indent_cm=None,
+    line_spacing_pt=18.0,
+    space_after_pt=18.0,
+    page_break_before=True,
+    keep_with_next=True,
+))
