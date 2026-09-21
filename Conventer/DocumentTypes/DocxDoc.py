@@ -1,4 +1,7 @@
-# converter/documents/docx.py
+"""DOCX-документ."""
+
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -17,9 +20,11 @@ class DocxDocument(BaseDocument):
         DocxDocument.from_file("report.docx")
     """
 
-    path: Path|None = None 
+    path: Path = field(kw_only=True)
     metadata: dict[str, Any] = field(default_factory=dict)
     _exists: bool = False
+
+    # --- фабрики ---
 
     @classmethod
     def at(cls, path: str | Path, **metadata: Any) -> "DocxDocument":
@@ -46,16 +51,13 @@ class DocxDocument(BaseDocument):
 
     @property
     def content(self) -> Path:
-        """Для DOCX содержимое — это путь к файлу.
-
-        Если нужен доступ к параграфам — используйте .open() (см. ниже).
-        """
+        """Для DOCX содержимое — путь к файлу."""
         return self.path
 
-    # --- дополнительный API для постобработки ---
+    # --- дополнительный API ---
 
     def open(self):
-        """Открыть через python-docx для постобработки."""
+        """Открыть через python-docx."""
         from docx import Document
         return Document(str(self.path))
 
