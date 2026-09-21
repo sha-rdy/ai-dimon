@@ -1,10 +1,37 @@
-# Python-generated files
+# Python
 __pycache__/
-*.py[oc]
+*.py[cod]
+*$py.class
+*.so
+.Python
 build/
 dist/
-wheels/
-*.egg-info
+*.egg-info/
+.eggs/
 
-# Virtual environments
-.venv
+# Виртуальные окружения
+.venv/
+venv/
+env/
+ENV/
+
+# uv
+# (uv.lock НЕ игнорируем — он должен быть в репо)
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Временные файлы конвертера
+*.tmp
+*.docx.tmp
+
+# Тестовые артефакты (не публикуем)
+scratch/
