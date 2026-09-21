@@ -41,6 +41,10 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
     toc_depth: int = 2
     toc_title: str = "СОДЕРЖАНИЕ"
 
+
+    verbose: bool = False
+
+
     # --- Lua-фильтры: имя файла без .lua → имя атрибута ---
     FILTER_FLAGS: ClassVar[dict[str, str]] = {
         "00-uppercase-h1":    "with_uppercase_h1",
@@ -125,7 +129,7 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
                 package_fixes=self.PRESET.package_fixes,
                 ctx=self.PRESET.ctx,
             )
-            pipeline.run(target.path)
+            pipeline.run(target.path,verbose=self.verbose)
 
     # ------------------------------------------------------------------
     # Аргументы pandoc

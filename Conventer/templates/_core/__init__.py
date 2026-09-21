@@ -10,7 +10,7 @@ from .filters import generate_filters
 from .generator import TemplateGenerator
 from .spec import Align, SectionSpec, StyleSpec, TabStop, TemplateSpec
 from .template import Template
-
+from .discovery import discover_templates
 
 __all__ = [
     "Align", "SectionSpec", "StyleSpec", "TabStop", "TemplateSpec",

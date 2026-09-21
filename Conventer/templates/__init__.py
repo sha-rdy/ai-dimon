@@ -11,7 +11,7 @@ from ._core import (
     TabStop, Template, TemplateChecker, TemplateConfig,
     TemplateGenerator, TemplateSpec, generate_filters,
 )
-
+from ._core import Template, discover_templates
 __all__ = [
     "Align", "SectionSpec", "StyleSpec", "TabStop", "TemplateSpec",
     "TemplateConfig",
