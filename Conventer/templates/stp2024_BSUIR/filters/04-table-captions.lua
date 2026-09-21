@@ -2,20 +2,11 @@
 -- Обычные разделы: «Таблица N.M».
 -- Приложения: «Таблица А.1», «Таблица Б.1».
 
-local SPECIAL = {
-  ["введение"] = true,
-  ["заключение"] = true,
-  ["содержание"] = true,
-  ["реферат"] = true,
-  ["список использованных источников"] = true,
-  ["перечень условных обозначений"] = true,
-  ["перечень условных обозначений, символов и терминов"] = true,
-}
+local SPECIAL = { ["введение"] = true, ["заключение"] = true, ["перечень условных обозначений"] = true, ["перечень условных обозначений, символов и терминов"] = true, ["реферат"] = true, ["содержание"] = true, ["список использованных источников"] = true }
 
-local APP_LETTERS = {
-  "А","Б","В","Г","Д","Е","Ж","И","К","Л","М",
-  "Н","П","Р","С","Т","У","Ф","Х","Ц","Ш","Щ","Э","Ю","Я",
-}
+local APP_LETTERS = { "А", "Б", "В", "Г", "Д", "Е", "Ж", "И", "К", "Л", "М", "Н", "П", "Р", "С", "Т", "У", "Ф", "Х", "Ц", "Ш", "Щ", "Э", "Ю", "Я" }
+
+local APPENDIX_PREFIX = "приложение"
 
 local section = 0
 local tab_count = 0
@@ -27,7 +18,8 @@ local function is_special(text)
 end
 
 local function is_appendix(text)
-  return pandoc.text.lower(text):match("^приложение") ~= nil
+  local low = pandoc.text.lower(text)
+  return low:sub(1, #APPENDIX_PREFIX) == APPENDIX_PREFIX
 end
 
 function Header(el)

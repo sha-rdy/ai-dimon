@@ -24,7 +24,11 @@ class Stp2024Configurator:
     """Применяет config.toml к экземпляру Stp2024Converter."""
 
     def __init__(self, config_path: Path | None = None) -> None:
-        self.config_path = config_path or Stp2024Converter.TEMPLATE.config_file
+        # config_file доступен на DEFAULT_TEMPLATE (класс-атрибут).
+        self.config_path = (
+            config_path
+            or Stp2024Converter.DEFAULT_TEMPLATE.config_file
+        )
 
     # ------------------------------------------------------------------
     # Публичный API
@@ -92,9 +96,6 @@ class Stp2024Configurator:
     def _build_ctx(base, cfg: TemplateConfig):
         changes: dict = {}
 
-        # Используем свойства TemplateConfig — они возвращают дефолт,
-        # если ключа нет в config.toml. Проверяем наличие ключа в headings,
-        # чтобы не перезаписать значение из пресета дефолтом.
         h = cfg.headings
         if "special" in h:
             changes["special_texts"] = cfg.special_texts
@@ -142,7 +143,6 @@ class Stp2024Configurator:
             if cfg_key in f:
                 enabled[fix_name] = bool(f[cfg_key])
 
-        # Отдельная секция [page_numbers] имеет свой enabled.
         if "enabled" in cfg.page_numbers:
             enabled["page_numbers"] = bool(cfg.page_numbers["enabled"])
 

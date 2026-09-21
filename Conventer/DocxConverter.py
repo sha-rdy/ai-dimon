@@ -1,18 +1,20 @@
 """Универсальный Markdown → DOCX конвертер.
 
-Специфика стандарта задаётся одним атрибутом класса:
-  • TEMPLATE — Template из templates._core.
+Специфика стандарта задаётся атрибутом DEFAULT_TEMPLATE:
+  • DEFAULT_TEMPLATE — Template по умолчанию для класса.
 
-Template содержит всё: spec (стили reference.docx), preset
-(фиксеры + FixContext), пути к reference.docx/filters/config.toml.
-DocxConverter берёт preset из TEMPLATE.preset при создании
-экземпляра. Configurator может переопределить self.PRESET.
+При создании экземпляра можно передать другой Template:
+    conv = Stp2024Converter()                      # STP2024
+    conv = Stp2024Converter(other_template)        # other_template
+
+DocxConverter.__init__ подхватывает template.preset в self.PRESET.
+Configurator может переопределить self.PRESET для конкретного экземпляра.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import pypandoc
 
@@ -25,8 +27,8 @@ from templates._core import Template
 class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
     """Markdown-документ → DOCX-документ."""
 
-    # --- Шаблон (обязателен для наследников) ---
-    TEMPLATE: ClassVar[Template | None] = None
+    # --- Шаблон по умолчанию (обязателен для наследников) ---
+    DEFAULT_TEMPLATE: ClassVar[Template | None] = None
 
     # --- Pandoc: формат входа и базовые аргументы ---
     MARKDOWN_FORMAT: ClassVar[str] = (
@@ -52,32 +54,52 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
     with_table_captions: bool = True
 
     # ------------------------------------------------------------------
+    # Валидация наследников
+    # ------------------------------------------------------------------
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        if cls is not DocxConverter and cls.DEFAULT_TEMPLATE is None:
+            raise TypeError(
+                f"{cls.__name__}: не задан DEFAULT_TEMPLATE. "
+                f"Определите его как атрибут класса "
+                f"(DEFAULT_TEMPLATE = STP2024)."
+            )
+
+    # ------------------------------------------------------------------
     # Инициализация
     # ------------------------------------------------------------------
 
-    def __init__(self) -> None:
-        # PRESET — экземплярный. Берём из TEMPLATE.preset, чтобы
-        # Configurator мог переопределить через conv.PRESET = ...
-        # без влияния на класс.
-        self.PRESET: Preset | None = (
-            self.TEMPLATE.preset if self.TEMPLATE is not None else None
-        )
+    def __init__(self, template: Template | None = None) -> None:
+        tpl = template if template is not None else self.DEFAULT_TEMPLATE
+        if tpl is None:
+            raise TypeError(
+                f"{type(self).__name__}: не задан DEFAULT_TEMPLATE "
+                f"и не передан template."
+            )
+        # TEMPLATE — instance-атрибут. Если template не передан,
+        # это значение совпадает с DEFAULT_TEMPLATE.
+        self.TEMPLATE: Template = tpl
+
+        # PRESET — instance-атрибут, из TEMPLATE.preset.
+        # Configurator может переопределить: conv.PRESET = ...
+        self.PRESET: Preset | None = tpl.preset
 
     # ------------------------------------------------------------------
     # Публичные свойства
     # ------------------------------------------------------------------
 
     @property
-    def reference_doc(self) -> Path | None:
-        return self.TEMPLATE.reference_doc if self.TEMPLATE else None
+    def reference_doc(self) -> Path:
+        return self.TEMPLATE.reference_doc
 
     @property
-    def filters_dir(self) -> Path | None:
-        return self.TEMPLATE.filters_dir if self.TEMPLATE else None
+    def filters_dir(self) -> Path:
+        return self.TEMPLATE.filters_dir
 
     @property
-    def config_file(self) -> Path | None:
-        return self.TEMPLATE.config_file if self.TEMPLATE else None
+    def config_file(self) -> Path:
+        return self.TEMPLATE.config_file
 
     # ------------------------------------------------------------------
     # Конвертация
@@ -113,8 +135,7 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
         args = list(self.BASE_ARGS)
 
         ref = self.reference_doc
-        if ref is not None:
-            args.append(f"--reference-doc={ref}")
+        args.append(f"--reference-doc={ref}")
 
         if self.with_toc:
             args.append("--toc")
@@ -132,7 +153,7 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
 
     def _filters(self) -> list[Path]:
         d = self.filters_dir
-        if d is None or not d.exists():
+        if not d.exists():
             return []
         result: list[Path] = []
         for f in sorted(d.glob("*.lua")):
@@ -151,7 +172,12 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
 
     def summary(self) -> str:
         preset_name = self.PRESET.name if self.PRESET else "—"
-        lines = [f"Пресет:  {preset_name}", "", "Pandoc:"]
+        lines = [
+            f"Шаблон:  {self.TEMPLATE.name}",
+            f"Пресет:  {preset_name}",
+            "",
+            "Pandoc:",
+        ]
         for name, enabled in (
             ("Оглавление",       self.with_toc),
             ("ПРОПИСНЫЕ H1",     self.with_uppercase_h1),
