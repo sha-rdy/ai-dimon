@@ -5,10 +5,10 @@ Configurator — точка расширения: переопределить �
 Python-кода.
 
 Гарантии:
-  • Класс-уровень Stp2024Converter.PRESET и общий STP2024 не мутируются.
+  • Класс-уровень STP2024 (Template) не мутируется.
   • Каждый вызов create() возвращает конвертер со своей изолированной
     копией пресета (Preset.copy() клонирует списки и ctx.enabled).
-  • Если в config.toml чего-то нет — берётся значение из STP2024.
+  • Если в config.toml чего-то нет — берётся значение из STP2024.preset.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from Stp2024Converter import Stp2024Converter
-from templates.loader import TemplateConfig
+from templates._core import TemplateConfig
 
 
 class Stp2024Configurator:
@@ -49,8 +49,7 @@ class Stp2024Configurator:
         preset.name = cfg.name or preset.name
         preset.ctx = self._build_ctx(preset.ctx, cfg)
 
-        # Присваивание на ЭКЗЕМПЛЯРЕ. Класс-уровень Stp2024Converter.PRESET
-        # остаётся общим STP2024, не тронут.
+        # Присваивание на ЭКЗЕМПЛЯРЕ. Класс-уровень не трогаем.
         conv.PRESET = preset
 
         self._apply_toc(conv, cfg)
@@ -93,13 +92,18 @@ class Stp2024Configurator:
     def _build_ctx(base, cfg: TemplateConfig):
         changes: dict = {}
 
+        # Используем свойства TemplateConfig — они возвращают дефолт,
+        # если ключа нет в config.toml. Проверяем наличие ключа в headings,
+        # чтобы не перезаписать значение из пресета дефолтом.
         h = cfg.headings
         if "special" in h:
-            changes["special_texts"] = frozenset(h["special"])
+            changes["special_texts"] = cfg.special_texts
         if "appendix_prefix" in h:
-            changes["appendix_prefix"] = str(h["appendix_prefix"])
+            changes["appendix_prefix"] = cfg.appendix_prefix
+        if "app_letters" in h:
+            changes["app_letters"] = cfg.app_letters
         if "special_style" in h:
-            changes["special_style_name"] = str(h["special_style"])
+            changes["special_style_name"] = cfg.special_style_name
 
         e = cfg.equations
         if "tab_cm" in e:
@@ -150,5 +154,5 @@ class Stp2024Configurator:
 # ----------------------------------------------------------------------
 
 def make_stp2024_converter(config_path: Path | None = None) -> Stp2024Converter:
-    """Создать конвертер, настроенный из config.toml (по умолчанию — рядом с шаблоном)."""
+    """Создать конвертер, настроенный из config.toml."""
     return Stp2024Configurator(config_path).create()

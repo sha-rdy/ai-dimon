@@ -20,22 +20,18 @@ def _q(tag: str) -> str:
 # --- конвертация единиц OOXML ---
 
 def _twips_to_mm(v: str | None) -> float | None:
-    """w:pgMar / w:pgSz — twips (1/20 pt = 1/1440 inch)."""
     return None if v is None else round(int(v) / 56.6929, 1)
 
 
 def _twentieths_to_pt(v: str | None) -> float | None:
-    """w:line при lineRule='exact'/'atLeast' — двадцатые доли пункта."""
     return None if v is None else int(v) / 20
 
 
 def _half_points_to_pt(v: str | None) -> float | None:
-    """w:sz — half-points (14 pt = 28)."""
     return None if v is None else int(v) / 2
 
 
 def _twips_to_cm(v: str | None) -> float | None:
-    """w:ind/@w:firstLine — twips (1 см ≈ 567 twips)."""
     return None if v is None else round(int(v) / 567, 2)
 
 
@@ -112,8 +108,6 @@ class TemplateChecker:
         self._check_styles(styles_root, result)
         return result
 
-    # --- секция ---
-
     def _check_section(self, doc_root: ET.Element, result: CheckResult) -> None:
         result.add_line("Параметры страницы:")
         sect = doc_root.find(".//w:sectPr", NS)
@@ -140,8 +134,6 @@ class TemplateChecker:
             result.add_line(f"  {mark} {label:9s}: {got} мм   (ожидается {want})")
             if not ok:
                 result.fail("section", f"{label}={got} мм, ожидается {want}")
-
-    # --- стили ---
 
     def _check_styles(self, styles_root: ET.Element, result: CheckResult) -> None:
         result.add_line("Стили — наличие:")
@@ -181,26 +173,21 @@ class TemplateChecker:
         rpr = el.find("w:rPr", NS) or ET.Element("empty")
         ppr = el.find("w:pPr", NS) or ET.Element("empty")
 
-        # Шрифт
         rfonts = rpr.find("w:rFonts", NS)
         font = rfonts.get(_q("ascii")) if rfonts is not None else None
         self._cmp(result, sid, "шрифт", font, spec.font)
 
-        # Размер (w:sz — half-points)
         sz = rpr.find("w:sz", NS)
         size = _half_points_to_pt(sz.get(_q("val"))) if sz is not None else None
         self._cmp_num(result, sid, "размер", size, spec.size_pt, self.tol_pt, "pt")
 
-        # Bold
         bold = _bool_attr(rpr.find("w:b", NS))
         self._cmp(result, sid, "bold", bold, spec.bold)
 
-        # Выравнивание
         jc = ppr.find("w:jc", NS)
         align = jc.get(_q("val")) if jc is not None else None
         self._cmp(result, sid, "выравнивание", align, spec.align.value)
 
-        # Отступ первой строки (w:ind — twips)
         ind = ppr.find("w:ind", NS)
         indent = _twips_to_cm(ind.get(_q("firstLine"))) if ind is not None else None
         if spec.first_line_indent_cm is None:
@@ -217,7 +204,6 @@ class TemplateChecker:
                 indent, spec.first_line_indent_cm, self.tol_cm, "см",
             )
 
-        # Межстрочный (w:line — twentieths при lineRule="exact")
         sp = ppr.find("w:spacing", NS)
         line_pt = _twentieths_to_pt(sp.get(_q("line"))) if sp is not None else None
         rule = sp.get(_q("lineRule")) if sp is not None else None
@@ -235,7 +221,6 @@ class TemplateChecker:
             if not ok:
                 result.fail(sid, f"межстрочный {line_pt}/{rule}")
 
-        # Page break before
         if spec.page_break_before:
             pbb = _bool_attr(ppr.find("w:pageBreakBefore", NS))
             mark = "✅" if pbb else "❌"
@@ -243,15 +228,12 @@ class TemplateChecker:
             if not pbb:
                 result.fail(sid, "нет page break before")
 
-        # Keep with next
         if spec.keep_with_next:
             kn = _bool_attr(ppr.find("w:keepNext", NS))
             mark = "✅" if kn else "❌"
             result.add_line(f"    {mark} keep with next: {kn}")
             if not kn:
                 result.fail(sid, "нет keep with next")
-
-    # --- сравнение ---
 
     def _cmp(self, result: CheckResult, sid: str, label: str, got, want) -> None:
         ok = got == want
@@ -261,14 +243,8 @@ class TemplateChecker:
             result.fail(sid, f"{label}={got}, ожидается {want}")
 
     def _cmp_num(
-        self,
-        result: CheckResult,
-        sid: str,
-        label: str,
-        got,
-        want,
-        tol: float,
-        unit: str,
+        self, result: CheckResult, sid: str, label: str,
+        got, want, tol: float, unit: str,
     ) -> None:
         ok = got is not None and abs(got - want) <= tol
         mark = "✅" if ok else "❌"

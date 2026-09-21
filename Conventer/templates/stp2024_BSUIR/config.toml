@@ -1,18 +1,19 @@
 # СТП 01-2024 (БГУИР) — параметры оформления.
+#
+# Значения здесь ПЕРЕКРЫВАЮТ дефолты из preset.py.
+# Если чего-то нет — берётся значение из STP2024_PRESET.
+#
+# Параметры страницы (поля, размер бумаги) здесь НЕ указываются:
+# они живут в spec.py и применяются при генерации reference.docx.
 
 [meta]
 name = "СТП 01-2024 (БГУИР)"
 
-[section]
-page_width_mm    = 210.0
-page_height_mm   = 297.0
-margin_top_mm    = 20.0
-margin_bottom_mm = 20.0
-margin_left_mm   = 30.0
-margin_right_mm  = 15.0
-footer_offset_mm = 10.0
-
 [headings]
+# Список ненумерованных разделов. Используется:
+#   • в постобработке (FixSpecialHeadings);
+#   • в Lua-фильтрах (01-section-numbers, 03-figure-captions,
+#     04-table-captions) через подстановку $special_lua_table.
 special = [
     "введение",
     "заключение",
@@ -22,8 +23,16 @@ special = [
     "перечень условных обозначений",
     "перечень условных обозначений, символов и терминов",
 ]
+
+# Префикс приложений. Используется в постобработке и в фильтрах.
 appendix_prefix = "приложение"
-special_style   = "SpecialHeading"
+
+# Буквы для приложений (порядок важен). Подставляется в Lua
+# через $app_letters_lua_table.
+app_letters = "АБВГДЕЖИКЛМНПРСТУФХЦШЩЭЮЯ"
+
+# Имя стиля для спецзаголовков в reference.docx.
+special_style = "SpecialHeading"
 
 [equations]
 tab_cm = 16.5

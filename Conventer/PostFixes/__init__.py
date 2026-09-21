@@ -5,14 +5,10 @@
 """
 
 from .Docx import (
-    # База
     DocxFix, PackageFix, FixContext, FixResult, DocxPipeline,
-    # Ресурсы
     DocxZipWorkspace, open_docx_zip,
     SectionTracker, SectionContext,
-    # Пресеты
-    Preset, STP2024,
-    # Фиксеры
+    Preset,
     FixSpecialHeadings, FixTables, FixLists,
     FixEquationNumbers, FixPageNumbers,
     FixFootnoteMarks, FixFieldUpdates,
@@ -23,7 +19,7 @@ __all__ = [
     "DocxFix", "PackageFix", "FixContext", "FixResult", "DocxPipeline",
     "DocxZipWorkspace", "open_docx_zip",
     "SectionTracker", "SectionContext",
-    "Preset", "STP2024",
+    "Preset",
     "FixSpecialHeadings", "FixTables", "FixLists",
     "FixEquationNumbers", "FixPageNumbers",
     "FixFootnoteMarks", "FixFieldUpdates",

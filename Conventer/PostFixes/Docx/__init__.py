@@ -21,7 +21,7 @@ from .footnotes import FixFootnoteMarks
 from .lists import FixLists
 from .page_numbers import FixPageNumbers
 from .pipeline import DocxPipeline
-from .presets import STP2024, Preset
+from .preset import  Preset
 from .special_headings import FixSpecialHeadings
 from .tables import FixTables
 
@@ -33,7 +33,7 @@ __all__ = [
     "DocxZipWorkspace", "open_docx_zip",
     "SectionTracker", "SectionContext",
     # Пресеты
-    "Preset", "STP2024",
+    "Preset",
     # Готовые фиксеры
     "FixSpecialHeadings", "FixTables", "FixLists",
     "FixEquationNumbers", "FixPageNumbers",

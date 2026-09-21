@@ -46,8 +46,6 @@ _BUILTIN_NAMES: dict[str, str] = {
     "Header":        "Header",
     "Footer":        "Footer",
     "TableGrid":     "Table Grid",
-    "TOCHeading":    "TOC Heading",
-
 }
 
 
@@ -56,6 +54,10 @@ class TemplateGenerator:
 
     def __init__(self, spec: TemplateSpec) -> None:
         self.spec = spec
+
+    # ------------------------------------------------------------------
+    # Публичный API
+    # ------------------------------------------------------------------
 
     def generate(self, out_path: Path) -> Path:
         doc = Document()
@@ -66,7 +68,9 @@ class TemplateGenerator:
         doc.save(out_path)
         return out_path
 
-    # --- секция ---
+    # ------------------------------------------------------------------
+    # Секция
+    # ------------------------------------------------------------------
 
     def _apply_section(self, doc: Document) -> None:
         s = doc.sections[0]
@@ -78,7 +82,9 @@ class TemplateGenerator:
         s.right_margin = Mm(self.spec.section.margin_right_mm)
         s.footer_distance = Mm(self.spec.section.footer_offset_mm)
 
-    # --- стили ---
+    # ------------------------------------------------------------------
+    # Стили
+    # ------------------------------------------------------------------
 
     def _apply_styles(self, doc: Document) -> None:
         for spec in self.spec.styles.values():
@@ -97,11 +103,9 @@ class TemplateGenerator:
                 return doc.styles[display]
             except KeyError:
                 pass
-
         for style in doc.styles:
             if style.style_id == name:
                 return style
-
         st = doc.styles.add_style(name, WD_STYLE_TYPE.PARAGRAPH)
         try:
             st.base_style = doc.styles[base]
@@ -111,41 +115,32 @@ class TemplateGenerator:
 
     @staticmethod
     def _apply_table_style(doc: Document, spec: StyleSpec):
-        """Создать табличный стиль 'Table' с границами. Возвращает style."""
-        # Ищем существующий табличный стиль с id = 'Table'
         for st in doc.styles:
             if st.type == WD_STYLE_TYPE.TABLE and st.style_id == "Table":
                 if spec.table_borders:
                     TemplateGenerator._apply_table_borders(st)
                 return st
-
-        # Создаём новый табличный стиль 'Table'
         try:
             style = doc.styles.add_style("Table", WD_STYLE_TYPE.TABLE)
         except Exception:
             style = doc.styles["Table Grid"]
-
         try:
             style.base_style = doc.styles["Table Grid"]
         except KeyError:
             pass
-
         if spec.table_borders:
             TemplateGenerator._apply_table_borders(style)
         return style
 
     @staticmethod
     def _apply_table_borders(style) -> None:
-        """Добавить границы к стилю таблицы."""
         tblPr = style.element.find(qn("w:tblPr"))
         if tblPr is None:
             tblPr = OxmlElement("w:tblPr")
             style.element.append(tblPr)
-
         old = tblPr.find(qn("w:tblBorders"))
         if old is not None:
             tblPr.remove(old)
-
         borders = OxmlElement("w:tblBorders")
         for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
             el = OxmlElement(f"w:{edge}")
@@ -186,10 +181,11 @@ class TemplateGenerator:
     def _apply_paragraph(style, spec: StyleSpec) -> None:
         p = style.paragraph_format
         p.alignment = _ALIGN_MAP[spec.align]
-        if spec.first_line_indent_cm is not None:
-            p.first_line_indent = Mm(spec.first_line_indent_cm * 10)
-        else:
-            p.first_line_indent = Mm(0)
+        p.first_line_indent = (
+            Mm(spec.first_line_indent_cm * 10)
+            if spec.first_line_indent_cm is not None
+            else Mm(0)
+        )
         p.space_before = Pt(spec.space_before_pt)
         p.space_after = Pt(spec.space_after_pt)
         p.keep_with_next = spec.keep_with_next

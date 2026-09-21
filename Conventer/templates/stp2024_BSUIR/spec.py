@@ -1,6 +1,10 @@
 """Спецификация шаблона reference.docx под СТП 01-2024 (БГУИР)."""
 
-from templates.spec import Align, SectionSpec, StyleSpec, TabStop, TemplateSpec
+from __future__ import annotations
+
+from templates._core import (
+    Align, SectionSpec, StyleSpec, TabStop, TemplateSpec,
+)
 
 
 STP2024_BSUIR_SPEC = TemplateSpec(
@@ -25,9 +29,8 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     align=Align.JUSTIFY,
     first_line_indent_cm=1.25,
     line_spacing_pt=18.0,
-    # tab_stops=_FORMULA_TABS,
-    # table_borders=True,
 ))
+
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="Table",
     font="Times New Roman", size_pt=14.0,
@@ -36,6 +39,7 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     line_spacing_pt=18.0,
     table_borders=True,
 ))
+
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="BodyText",
     base_style="Normal",
@@ -123,6 +127,7 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     first_line_indent_cm=None,
     line_spacing_pt=18.0,
 ))
+
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="TOCHeading",
     font="Times New Roman", size_pt=14.0, bold=True,
@@ -132,6 +137,7 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     line_spacing_pt=18.0,
     space_after_pt=18.0,
 ))
+
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="SpecialHeading",
     font="Times New Roman", size_pt=14.0, bold=True,
@@ -143,6 +149,7 @@ STP2024_BSUIR_SPEC.add(StyleSpec(
     page_break_before=True,
     keep_with_next=True,
 ))
+
 STP2024_BSUIR_SPEC.add(StyleSpec(
     name="FootnoteText",
     font="Times New Roman", size_pt=12.0,

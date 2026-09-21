@@ -1,15 +1,16 @@
 """Универсальный Markdown → DOCX конвертер.
 
-Специфика стандарта задаётся двумя атрибутами класса:
-  • TEMPLATE — TemplateReference (reference.docx, filters, config);
-  • PRESET   — Preset из PostFixes.Docx (контекст + фиксеры + pandoc-args).
+Специфика стандарта задаётся одним атрибутом класса:
+  • TEMPLATE — Template из templates._core.
 
-Stp2024Converter — тонкий наследник, переопределяющий только эти два.
+Template содержит всё: spec (стили reference.docx), preset
+(фиксеры + FixContext), пути к reference.docx/filters/config.toml.
+DocxConverter берёт preset из TEMPLATE.preset при создании
+экземпляра. Configurator может переопределить self.PRESET.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
@@ -18,55 +19,14 @@ import pypandoc
 from IConverter import IConverter, ConverterError
 from DocumentTypes import MarkdownDocument, DocxDocument
 from PostFixes.Docx import DocxPipeline, Preset
+from templates._core import Template
 
-
-# ----------------------------------------------------------------------
-# Ресурсы шаблона
-# ----------------------------------------------------------------------
-
-@dataclass(frozen=True)
-class TemplateReference:
-    """Пути к ресурсам шаблона.
-
-    Папка шаблона обычно содержит:
-        reference.docx    — стили, поля страницы
-        filters/*.lua     — Lua-фильтры Pandoc
-        config.toml       — (опционально) настройки для Configurator
-    """
-
-    directory: Path
-
-    @property
-    def reference_doc(self) -> Path:
-        return self.directory / "reference.docx"
-
-    @property
-    def filters_dir(self) -> Path:
-        return self.directory / "filters"
-
-    @property
-    def config_file(self) -> Path:
-        return self.directory / "config.toml"
-
-    def exists(self) -> bool:
-        return self.directory.exists()
-
-
-# ----------------------------------------------------------------------
-# Конвертер
-# ----------------------------------------------------------------------
 
 class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
-    """Markdown-документ → DOCX-документ.
+    """Markdown-документ → DOCX-документ."""
 
-    Атрибуты уровня класса — точки расширения для наследников.
-    Экземплярные атрибуты (with_toc, toc_depth, ...) можно менять
-    на конкретном конвертере, не задевая остальные.
-    """
-
-    # --- Шаблон и пресет (обязательны для наследников) ---
-    TEMPLATE: ClassVar[TemplateReference | None] = None
-    PRESET: ClassVar[Preset | None] = None
+    # --- Шаблон (обязателен для наследников) ---
+    TEMPLATE: ClassVar[Template | None] = None
 
     # --- Pandoc: формат входа и базовые аргументы ---
     MARKDOWN_FORMAT: ClassVar[str] = (
@@ -92,6 +52,18 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
     with_table_captions: bool = True
 
     # ------------------------------------------------------------------
+    # Инициализация
+    # ------------------------------------------------------------------
+
+    def __init__(self) -> None:
+        # PRESET — экземплярный. Берём из TEMPLATE.preset, чтобы
+        # Configurator мог переопределить через conv.PRESET = ...
+        # без влияния на класс.
+        self.PRESET: Preset | None = (
+            self.TEMPLATE.preset if self.TEMPLATE is not None else None
+        )
+
+    # ------------------------------------------------------------------
     # Публичные свойства
     # ------------------------------------------------------------------
 
@@ -102,6 +74,10 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
     @property
     def filters_dir(self) -> Path | None:
         return self.TEMPLATE.filters_dir if self.TEMPLATE else None
+
+    @property
+    def config_file(self) -> Path | None:
+        return self.TEMPLATE.config_file if self.TEMPLATE else None
 
     # ------------------------------------------------------------------
     # Конвертация
@@ -158,7 +134,6 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
         d = self.filters_dir
         if d is None or not d.exists():
             return []
-
         result: list[Path] = []
         for f in sorted(d.glob("*.lua")):
             flag = self.FILTER_FLAGS.get(f.stem)

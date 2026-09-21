@@ -4,8 +4,7 @@ TemplateSpec описывает:
   • параметры секции (размер страницы, поля, footer);
   • набор стилей с их параметрами.
 
-Спецификации конкретных стандартов (СТП-2024, ГОСТ 7.32 и т.д.)
-наследуют или инстанцируют TemplateSpec.
+Конкретные стандарты (СТП-2024, ГОСТ 7.32) инстанцируют TemplateSpec.
 """
 
 from __future__ import annotations
@@ -38,18 +37,18 @@ class SectionSpec:
 class TabStop:
     """Позиция табуляции в абзаце."""
     pos_cm: float
-    align: str = "right"   # "left" | "center" | "right"
+    align: str = "right"
 
 
 @dataclass(frozen=True)
 class StyleSpec:
     """Параметры одного стиля."""
-    name: str                       # styleId, например "Heading1"
+    name: str
     font: str = "Times New Roman"
     size_pt: float = 14.0
     bold: bool = False
     italic: bool = False
-    color_hex: str | None = None    # "000000" — принудительно чёрный
+    color_hex: str | None = None
     align: Align = Align.JUSTIFY
     first_line_indent_cm: float | None = 1.25
     line_spacing_pt: float | None = 18.0
