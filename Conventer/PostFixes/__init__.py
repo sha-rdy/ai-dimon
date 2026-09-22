@@ -11,7 +11,7 @@ from .Docx import (
     Preset,
     FixSpecialHeadings, FixTables, FixLists,
     FixEquationNumbers, FixPageNumbers,
-    FixFootnoteMarks, FixFieldUpdates,
+    FixFootnoteMarks, FixFieldUpdates,FixInlineMathSpacing,FixSourceCodeWrap,FixSourceCodeAlign
 )
 
 
@@ -22,5 +22,5 @@ __all__ = [
     "Preset",
     "FixSpecialHeadings", "FixTables", "FixLists",
     "FixEquationNumbers", "FixPageNumbers",
-    "FixFootnoteMarks", "FixFieldUpdates",
+    "FixFootnoteMarks", "FixFieldUpdates","FixInlineMathSpacing","FixSourceCodeWrap","FixSourceCodeAlign"
 ]

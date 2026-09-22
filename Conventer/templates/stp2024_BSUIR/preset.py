@@ -15,6 +15,9 @@ from PostFixes.Docx import (
     FixPageNumbers,
     FixSpecialHeadings,
     FixTables,
+    FixInlineMathSpacing,
+    FixSourceCodeWrap,
+    FixSourceCodeAlign,
     Preset,
 )
 
@@ -49,7 +52,10 @@ STP2024_PRESET = Preset(
         FixSpecialHeadings(),
         FixTables(),
         FixLists(),
+        FixSourceCodeAlign(),
+        FixSourceCodeWrap(),
         FixEquationNumbers(),
+        FixInlineMathSpacing(),
         FixPageNumbers(),
     ],
     package_fixes=[

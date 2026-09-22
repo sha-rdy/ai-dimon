@@ -6,6 +6,8 @@
     python -m cli convert in.md out.docx --template stp2024_BSUIR
     python -m cli convert in.md out.docx --config custom.toml
     python -m cli convert in.md out.docx --no-toc --toc-depth 3 -v
+    python -m cli convert in.md out.docx --force
+    python -m cli convert in.md out.docx --no-clobber
 """
 
 from __future__ import annotations
@@ -58,6 +60,42 @@ def _build_converter(
     if not skip_config:
         DocxConfigurator(config_path).configure(conv)
     return conv
+
+
+def _check_overwrite(dst_path: Path, force: bool, no_clobber: bool) -> bool:
+    """Решить, можно ли писать в dst_path.
+
+    True  — можно.
+    False — пользователь отказался или сработал --no-clobber.
+
+    Приоритет:
+      --force       → всегда True
+      --no-clobber  → False, если файл существует
+      (нет флагов)  → True, если файла нет
+                      True, если stdout не tty (скрипт) — тихая перезапись
+                      True, если в tty и пользователь ответил y/д
+                      False, если в tty и пользователь ответил иначе
+    """
+    if not dst_path.exists():
+        return True
+
+    if force:
+        return True
+
+    if no_clobber:
+        print(f"❌ Файл существует, --no-clobber: {dst_path}")
+        return False
+
+    # Не интерактив (пайп, скрипт) — не мешаем, перезаписываем молча.
+    if not sys.stdout.isatty():
+        return True
+
+    answer = input(f"⚠️  {dst_path} уже существует. Перезаписать? [y/N] ")
+    if answer.strip().lower() in ("y", "yes", "д", "да"):
+        return True
+
+    print("Отменено.")
+    return False
 
 
 def _print_results(results) -> None:
@@ -114,6 +152,10 @@ def cmd_convert(args: argparse.Namespace) -> int:
 
     if not src_path.exists():
         print(f"❌ Входной файл не найден: {src_path}")
+        return 1
+
+    # --- Проверка перезаписи ---
+    if not _check_overwrite(dst_path, args.force, args.no_clobber):
         return 1
 
     dst_path.parent.mkdir(parents=True, exist_ok=True)
@@ -204,6 +246,17 @@ def main(argv: list[str] | None = None) -> int:
     p_cv.add_argument("--no-toc", action="store_true", help="выключить оглавление")
     p_cv.add_argument("--toc-depth", type=int, help="глубина TOC")
     p_cv.add_argument("--toc-title", help="заголовок TOC")
+
+    overwrite = p_cv.add_mutually_exclusive_group()
+    overwrite.add_argument(
+        "-f", "--force", action="store_true",
+        help="перезаписать выходной файл, если он существует (без вопроса)",
+    )
+    overwrite.add_argument(
+        "-n", "--no-clobber", action="store_true",
+        help="не перезаписывать существующий выходной файл",
+    )
+
     p_cv.add_argument("-v", "--verbose", action="store_true",
                       help="печатать работу каждого фиксера")
     p_cv.add_argument("-q", "--quiet", action="store_true",

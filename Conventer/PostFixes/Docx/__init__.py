@@ -11,7 +11,7 @@
 Приватное (меняется без предупреждения):
   • _ooxml, _zip, _tracker — внутренние хелперы.
 """
-
+from .inline_math import FixInlineMathSpacing
 from ._tracker import SectionContext, SectionTracker
 from ._zip import DocxZipWorkspace, open_docx_zip
 from .base import DocxFix, FixContext, FixResult, PackageFix
@@ -24,7 +24,7 @@ from .pipeline import DocxPipeline
 from .preset import  Preset
 from .special_headings import FixSpecialHeadings
 from .tables import FixTables
-
+from .source_code import FixSourceCodeWrap, FixSourceCodeAlign
 
 __all__ = [
     # База
@@ -37,5 +37,5 @@ __all__ = [
     # Готовые фиксеры
     "FixSpecialHeadings", "FixTables", "FixLists",
     "FixEquationNumbers", "FixPageNumbers",
-    "FixFootnoteMarks", "FixFieldUpdates",
+    "FixFootnoteMarks", "FixFieldUpdates","FixInlineMathSpacing","FixSourceCodeWrap","FixSourceCodeAlign"
 ]
