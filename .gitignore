@@ -17,7 +17,7 @@ ENV/
 
 # uv
 # (uv.lock НЕ игнорируем — он должен быть в репо)
-
+tmp
 # IDE
 .vscode/
 .idea/

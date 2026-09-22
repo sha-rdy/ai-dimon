@@ -23,7 +23,7 @@ from .page_numbers import FixPageNumbers
 from .pipeline import DocxPipeline
 from .preset import  Preset
 from .special_headings import FixSpecialHeadings
-from .tables import FixTables
+from .tables import FixTableLayout, FixTableCells
 from .source_code import FixSourceCodeWrap, FixSourceCodeAlign
 
 __all__ = [
@@ -35,7 +35,7 @@ __all__ = [
     # Пресеты
     "Preset",
     # Готовые фиксеры
-    "FixSpecialHeadings", "FixTables", "FixLists",
+    "FixSpecialHeadings", "FixTableLayout","FixTableCells", "FixLists",
     "FixEquationNumbers", "FixPageNumbers",
     "FixFootnoteMarks", "FixFieldUpdates","FixInlineMathSpacing","FixSourceCodeWrap","FixSourceCodeAlign"
 ]

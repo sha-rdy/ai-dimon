@@ -3,9 +3,14 @@
 Единственный модуль, знающий канонический порядок дочерних элементов
 <w:pPr> и <w:rPr>. Остальные модули вставляют элементы через
 ppr_insert()/rpr_insert() — это гарантирует, что Word не отвергнет файл.
+
+Плюс четыре хелпера get_or_add_* — их python-docx предоставляет
+не для всех контейнеров (pPr есть, tblPr и tcPr — нет).
 """
 
 from __future__ import annotations
+
+from docx.oxml import OxmlElement
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
@@ -24,7 +29,11 @@ def xml_space() -> str:
     return f"{{{XML_NS}}}space"
 
 
-# Канонический порядок дочерних элементов <w:pPr> (ECMA-376, §17.3.1.26)
+# ----------------------------------------------------------------------
+# Канонический порядок элементов
+# ----------------------------------------------------------------------
+
+# <w:pPr> — ECMA-376, §17.3.1.26
 _PPR_ORDER = (
     "pStyle", "keepNext", "keepLines", "pageBreakBefore", "framePr",
     "widowControl", "numPr", "suppressLineNumbers", "pBdr", "shd",
@@ -36,7 +45,7 @@ _PPR_ORDER = (
     "divId", "cnfStyle", "rPr", "sectPr", "pPrChange",
 )
 
-# Канонический порядок дочерних элементов <w:rPr> (ECMA-376, §17.3.2.28)
+# <w:rPr> — ECMA-376, §17.3.2.28
 _RPR_ORDER = (
     "rStyle", "rFonts", "b", "bCs", "i", "iCs", "caps", "smallCaps",
     "strike", "dstrike", "outline", "shadow", "emboss", "imprint",
@@ -74,6 +83,46 @@ def ppr_insert(pPr, el) -> None:
 
 def rpr_insert(rPr, el) -> None:
     _insert_ordered(rPr, el, _RPR_ORDER)
+
+
+# ----------------------------------------------------------------------
+# get_or_add_* — аналогично python-docx get_or_add_pPr, но для всех
+# ----------------------------------------------------------------------
+
+def get_or_add_pPr(p):
+    """Вернуть <w:pPr> абзаца, создавая при необходимости."""
+    pPr = p.find(w("pPr"))
+    if pPr is None:
+        pPr = OxmlElement("w:pPr")
+        p.insert(0, pPr)
+    return pPr
+
+
+def get_or_add_tblPr(tbl):
+    """Вернуть <w:tblPr> таблицы, создавая при необходимости."""
+    tblPr = tbl.find(w("tblPr"))
+    if tblPr is None:
+        tblPr = OxmlElement("w:tblPr")
+        tbl.insert(0, tblPr)
+    return tblPr
+
+
+def get_or_add_tcPr(tc):
+    """Вернуть <w:tcPr> ячейки, создавая при необходимости."""
+    tcPr = tc.find(w("tcPr"))
+    if tcPr is None:
+        tcPr = OxmlElement("w:tcPr")
+        tc.insert(0, tcPr)
+    return tcPr
+
+
+def get_or_add_rPr(run_el):
+    """Вернуть <w:rPr> run'а, создавая при необходимости."""
+    rPr = run_el.find(w("rPr"))
+    if rPr is None:
+        rPr = OxmlElement("w:rPr")
+        run_el.insert(0, rPr)
+    return rPr
 
 
 # ----------------------------------------------------------------------

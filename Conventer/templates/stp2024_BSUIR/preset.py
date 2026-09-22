@@ -14,7 +14,8 @@ from PostFixes.Docx import (
     FixLists,
     FixPageNumbers,
     FixSpecialHeadings,
-    FixTables,
+    FixTableLayout,
+    FixTableCells,
     FixInlineMathSpacing,
     FixSourceCodeWrap,
     FixSourceCodeAlign,
@@ -50,7 +51,8 @@ STP2024_PRESET = Preset(
         #   SpecialHeading как H1, поэтому смена стиля должна быть раньше.
         #   page_numbers последним — пишет в футер, ни на что не влияет.
         FixSpecialHeadings(),
-        FixTables(),
+        FixTableLayout(),
+        FixTableCells(),
         FixLists(),
         FixSourceCodeAlign(),
         FixSourceCodeWrap(),

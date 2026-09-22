@@ -9,7 +9,7 @@ from .Docx import (
     DocxZipWorkspace, open_docx_zip,
     SectionTracker, SectionContext,
     Preset,
-    FixSpecialHeadings, FixTables, FixLists,
+    FixSpecialHeadings, FixTableLayout,FixTableCells, FixLists,
     FixEquationNumbers, FixPageNumbers,
     FixFootnoteMarks, FixFieldUpdates,FixInlineMathSpacing,FixSourceCodeWrap,FixSourceCodeAlign
 )
@@ -20,7 +20,7 @@ __all__ = [
     "DocxZipWorkspace", "open_docx_zip",
     "SectionTracker", "SectionContext",
     "Preset",
-    "FixSpecialHeadings", "FixTables", "FixLists",
+    "FixSpecialHeadings", "FixTableLayout","FixTableCells", "FixLists",
     "FixEquationNumbers", "FixPageNumbers",
     "FixFootnoteMarks", "FixFieldUpdates","FixInlineMathSpacing","FixSourceCodeWrap","FixSourceCodeAlign"
 ]
