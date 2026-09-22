@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from DocxConverter import DocxConverter
+from DocxConventer import DocxConventer
 from templates._core import TemplateConfig
 
 
@@ -29,7 +29,7 @@ class DocxConfigurator:
     # Публичный API
     # ------------------------------------------------------------------
 
-    def configure(self, conv: DocxConverter) -> DocxConverter:
+    def configure(self, conv: DocxConventer) -> DocxConventer:
         cfg_path = self.config_path or conv.config_file
         if not cfg_path.exists():
             return conv
@@ -53,7 +53,7 @@ class DocxConfigurator:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _apply_toc(conv: DocxConverter, cfg: TemplateConfig) -> None:
+    def _apply_toc(conv: DocxConventer, cfg: TemplateConfig) -> None:
         t = cfg.toc
         if "enabled" in t:
             conv.with_toc = bool(t["enabled"])
@@ -63,7 +63,7 @@ class DocxConfigurator:
             conv.toc_title = str(t["title"])
 
     @staticmethod
-    def _apply_filter_flags(conv: DocxConverter, cfg: TemplateConfig) -> None:
+    def _apply_filter_flags(conv: DocxConventer, cfg: TemplateConfig) -> None:
         f = cfg.features
         for cfg_key, attr in (
             ("uppercase_h1",    "with_uppercase_h1"),

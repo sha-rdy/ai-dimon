@@ -6,7 +6,7 @@ In = TypeVar("In",bound=BaseDocument)
 Out = TypeVar("Out",bound=BaseDocument)
 
 
-class IConverter(ABC, Generic[In, Out]):
+class IConventer(ABC, Generic[In, Out]):
     @abstractmethod
     def convert(self, source: In, target: Out) -> None:
         ...

@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 from Stp2024Configurator import make_stp2024_converter
 from DocumentTypes import MarkdownDocument, DocxDocument
-from IConverter import ConverterError
+from IConventer import ConverterError
 
 
 def sha256(path: Path) -> str:

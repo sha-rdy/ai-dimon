@@ -18,13 +18,13 @@ from typing import Any, ClassVar
 
 import pypandoc
 
-from IConverter import IConverter, ConverterError
+from IConventer import IConventer, ConverterError
 from DocumentTypes import MarkdownDocument, DocxDocument
 from PostFixes.Docx import DocxPipeline, Preset
 from templates._core import Template
 
 
-class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
+class DocxConventer(IConventer[MarkdownDocument, DocxDocument]):
     """Markdown-документ → DOCX-документ."""
 
     # --- Шаблон по умолчанию (обязателен для наследников) ---
@@ -63,7 +63,7 @@ class DocxConverter(IConverter[MarkdownDocument, DocxDocument]):
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
-        if cls is not DocxConverter and cls.DEFAULT_TEMPLATE is None:
+        if cls is not DocxConventer and cls.DEFAULT_TEMPLATE is None:
             raise TypeError(
                 f"{cls.__name__}: не задан DEFAULT_TEMPLATE. "
                 f"Определите его как атрибут класса "

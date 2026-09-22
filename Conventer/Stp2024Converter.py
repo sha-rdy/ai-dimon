@@ -14,11 +14,11 @@ Template в конструктор:
 
 from __future__ import annotations
 
-from DocxConverter import DocxConverter
+from DocxConventer import DocxConventer
 from templates.stp2024_BSUIR import STP2024
 
 
-class Stp2024Converter(DocxConverter):
+class Stp2024Converter(DocxConventer):
     """Конвертер по СТП 01-2024."""
 
     DEFAULT_TEMPLATE = STP2024

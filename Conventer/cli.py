@@ -16,9 +16,9 @@ import sys
 from pathlib import Path
 
 from DocxConfigurator import DocxConfigurator
-from DocxConverter import DocxConverter
+from DocxConventer import DocxConventer
 from DocumentTypes import MarkdownDocument, DocxDocument
-from IConverter import ConverterError
+from IConventer import ConverterError
 from templates._core import Template, discover_templates
 
 
@@ -53,8 +53,8 @@ def _build_converter(
     template: Template,
     config_path: Path | None,
     skip_config: bool,
-) -> DocxConverter:
-    conv = DocxConverter(template=template)
+) -> DocxConventer:
+    conv = DocxConventer(template=template)
     if not skip_config:
         DocxConfigurator(config_path).configure(conv)
     return conv
